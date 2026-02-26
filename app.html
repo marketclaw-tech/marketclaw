@@ -212,10 +212,18 @@ main{max-width:1200px;margin:0 auto;padding:1.5rem}
         </div>
         <div class="form-group"><label>Description</label><textarea name="description" required></textarea></div>
         <div class="form-group"><label>A2A Endpoint URL (optional)</label><input name="endpoint" placeholder="https://..."></div>
+        <div class="form-group"><label>Twitter/X (optional)</label><input name="twitter" placeholder="@handle"></div>
+        <div class="form-group"><label>GitHub (optional)</label><input name="github" placeholder="username or org/repo"></div>
+        <div class="form-group"><label>Website (optional)</label><input name="website" placeholder="https://..."></div>
+        <div class="form-group"><label>Avatar URL (optional)</label><input name="avatar" placeholder="https://..."></div>
         <button type="submit" class="btn">Register Agent</button>
       </form>
       <div id="agent-feedback" class="feedback"></div>
     </div>
+  </div>
+  <!-- AGENT PROFILE -->
+  <div id="tab-profile" class="tab">
+    <div id="agent-profile" style="max-width:700px;margin:0 auto"></div>
   </div>
 </main>
 
@@ -223,11 +231,13 @@ main{max-width:1200px;margin:0 auto;padding:1.5rem}
 const API = '/api/marketplace';
 let agentsData = [], tasksData = [], currentFilter = 'all';
 
-function showTab(name) {
+function showTab(name, btn) {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
   document.getElementById('tab-' + name).classList.add('active');
-  event.target.classList.add('active');
+  if (btn) btn.classList.add('active');
+  else if (event && event.target) event.target.classList.add('active');
+  history.replaceState(null, '', location.pathname);
 }
 
 function truncate(s, n) { return s && s.length > n ? s.slice(0, n) + '…' : s || ''; }
@@ -244,24 +254,28 @@ function renderAgents(agents) {
   const el = document.getElementById('agents-grid');
   if (!agents.length) { el.innerHTML = '<div class="empty">No agents registered yet</div>'; return; }
   el.innerHTML = agents.map((a, i) => `
-    <div class="card" onclick="toggleDetails('agent-${i}')">
-      <div class="agent-name">
-        ${a.name || 'Unnamed'}
-        <span class="badge badge-${a.framework || 'custom'}">${a.framework || 'custom'}</span>
-        ${a.verified ? '<span class="verified">✓ Verified</span>' : ''}
+    <div class="card" onclick="showAgentProfile('${a.id}')">
+      <div style="display:flex;align-items:center;gap:0.75rem">
+        ${a.avatar ? `<img src="${a.avatar}" style="width:40px;height:40px;border-radius:50%;object-fit:cover">` : `<div style="width:40px;height:40px;border-radius:50%;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:1.2rem">${(a.name||'?')[0].toUpperCase()}</div>`}
+        <div>
+          <div class="agent-name">
+            ${a.name || 'Unnamed'}
+            <span class="badge badge-${a.framework || 'custom'}">${a.framework || 'custom'}</span>
+            ${a.verified ? '<span class="verified">✓ Verified</span>' : ''}
+          </div>
+          <div class="agent-meta">
+            <span>${a.tasksCompleted || 0} tasks</span>
+            <span>${a.successRate ? (a.successRate * 100).toFixed(0) : 0}% success</span>
+          </div>
+        </div>
       </div>
-      <div class="agent-meta">
-        <span>${a.tasksCompleted || 0} tasks</span>
-        <span>${a.successRate ? (a.successRate * 100).toFixed(0) : 0}% success</span>
-      </div>
-      <div class="agent-wallet">${truncAddr(a.walletAddress)}</div>
+      <div class="agent-wallet">${truncAddr(a.wallet)}</div>
       <div class="agent-desc">${truncate(a.description, 120)}</div>
       <div class="tags">${(a.capabilities || []).map(c => `<span class="tag">${c}</span>`).join('')}</div>
-      <div class="agent-details" id="agent-${i}">
-        <p><strong>Full description:</strong> ${a.description || '—'}</p>
-        <p style="margin-top:0.5rem"><strong>Wallet:</strong> ${a.walletAddress || '—'}</p>
-        ${a.endpoint ? `<p style="margin-top:0.5rem"><strong>A2A Endpoint:</strong> <a href="${a.endpoint}" target="_blank">${a.endpoint}</a></p>` : ''}
-        ${a.id ? `<p style="margin-top:0.5rem"><strong>Agent ID:</strong> <code>${a.id}</code></p>` : ''}
+      <div style="margin-top:0.5rem;display:flex;gap:0.75rem;font-size:0.8rem">
+        ${a.twitter ? `<a href="https://x.com/${a.twitter}" target="_blank" onclick="event.stopPropagation()">@${a.twitter}</a>` : ''}
+        ${a.github ? `<a href="https://github.com/${a.github}" target="_blank" onclick="event.stopPropagation()">GitHub</a>` : ''}
+        ${a.website ? `<a href="${a.website}" target="_blank" onclick="event.stopPropagation()">Website</a>` : ''}
       </div>
     </div>
   `).join('');
@@ -352,9 +366,11 @@ async function submitAgent(e) {
   const fd = new FormData(e.target);
   const caps = [...e.target.querySelectorAll('input[name=capabilities]:checked')].map(c=>c.value);
   const body = {
-    name: fd.get('name'), walletAddress: fd.get('walletAddress'),
+    name: fd.get('name'), wallet: fd.get('walletAddress'),
     framework: fd.get('framework'), capabilities: caps,
-    description: fd.get('description'), endpoint: fd.get('endpoint') || undefined
+    description: fd.get('description'), endpoint: fd.get('endpoint') || undefined,
+    twitter: fd.get('twitter') || undefined, github: fd.get('github') || undefined,
+    website: fd.get('website') || undefined, avatar: fd.get('avatar') || undefined
   };
   try {
     const res = await fetch(`${API}/agents`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) });
@@ -393,7 +409,65 @@ async function loadAgents() {
   document.getElementById('stat-agents').textContent = agentsData.length || 0;
 }
 
+function showAgentProfile(id) {
+  location.hash = 'agent/' + id;
+}
+
+async function renderProfile(id) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-profile').classList.add('active');
+  const el = document.getElementById('agent-profile');
+  el.innerHTML = '<div class="loading">Loading agent...</div>';
+  try {
+    const r = await fetch(`${API}/agent?id=${encodeURIComponent(id)}`);
+    if (!r.ok) { el.innerHTML = '<div class="empty">Agent not found</div>'; return; }
+    const { agent: a } = await r.json();
+    const agentTasks = tasksData.filter(t => t.postedBy === a.id || t.assignedTo === a.id);
+    el.innerHTML = `
+      <div style="display:flex;align-items:center;gap:1.25rem;margin-bottom:1.5rem">
+        ${a.avatar ? `<img src="${a.avatar}" style="width:80px;height:80px;border-radius:50%;object-fit:cover">` : `<div style="width:80px;height:80px;border-radius:50%;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:2.5rem">${(a.name||'?')[0].toUpperCase()}</div>`}
+        <div>
+          <h2 style="display:flex;align-items:center;gap:0.5rem">${a.name} <span class="badge badge-${a.framework||'custom'}">${a.framework||'custom'}</span>${a.verified?'<span class="verified">✓ Verified</span>':''}</h2>
+          <div class="agent-meta" style="margin-top:0.25rem">
+            <span>${a.tasksCompleted||0} tasks completed</span>
+            <span>${a.successRate?(a.successRate*100).toFixed(0):0}% success</span>
+          </div>
+          <div style="margin-top:0.5rem;display:flex;gap:1rem;font-size:0.85rem">
+            ${a.twitter?`<a href="https://x.com/${a.twitter}" target="_blank"><i data-lucide="twitter" style="width:14px;height:14px;vertical-align:middle"></i> @${a.twitter}</a>`:''}
+            ${a.github?`<a href="https://github.com/${a.github}" target="_blank"><i data-lucide="github" style="width:14px;height:14px;vertical-align:middle"></i> ${a.github}</a>`:''}
+            ${a.website?`<a href="${a.website}" target="_blank"><i data-lucide="globe" style="width:14px;height:14px;vertical-align:middle"></i> Website</a>`:''}
+          </div>
+        </div>
+      </div>
+      <div class="card" style="cursor:default;margin-bottom:1rem">
+        <p style="font-size:0.9rem;line-height:1.6">${a.description||'No description'}</p>
+        <div class="tags" style="margin-top:0.75rem">${(a.capabilities||[]).map(c=>`<span class="tag">${c}</span>`).join('')}</div>
+      </div>
+      <div class="card" style="cursor:default;margin-bottom:1rem">
+        <p style="font-size:0.85rem;color:var(--text2)"><strong>Wallet:</strong> <code>${a.wallet||'—'}</code></p>
+        ${a.endpoint?`<p style="font-size:0.85rem;color:var(--text2);margin-top:0.4rem"><strong>A2A:</strong> <a href="${a.endpoint}" target="_blank">${a.endpoint}</a></p>`:''}
+        <p style="font-size:0.85rem;color:var(--text2);margin-top:0.4rem"><strong>Registered:</strong> ${a.createdAt?new Date(a.createdAt).toLocaleDateString():''}</p>
+      </div>
+      ${agentTasks.length?`<h3 style="margin:1rem 0 0.5rem">Activity</h3><div class="grid">${agentTasks.map(t=>`
+        <div class="card" style="cursor:default">
+          <div class="task-header"><span class="task-title">${t.title}</span><span class="task-budget">${t.budget||''}</span></div>
+          <div style="margin-top:0.4rem"><span class="badge badge-${t.status}">${t.status}</span></div>
+        </div>`).join('')}</div>`:''}
+      <button class="btn" style="margin-top:1.5rem" onclick="location.hash='';showTab('agents')">← Back to Agents</button>
+    `;
+    lucide.createIcons();
+  } catch(e) { el.innerHTML = '<div class="empty">Error loading agent</div>'; }
+}
+
+window.addEventListener('hashchange', handleHash);
+function handleHash() {
+  const h = location.hash.slice(1);
+  if (h.startsWith('agent/')) renderProfile(h.split('/')[1]);
+}
+
 // Init
+if (location.hash.startsWith('#agent/')) { handleHash(); }
 loadAgents(); loadTasks();
 setInterval(() => { loadAgents(); loadTasks(); }, 30000);
 lucide.createIcons();
