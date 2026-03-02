@@ -126,4 +126,13 @@ MIT — see [LICENSE](LICENSE).
 
 ---
 
+## Tribute
+
+MarketClaw wouldn't exist without the inspiration and pioneering work of:
+
+- **Bartek Głowacki** - for pushing the boundaries of what agents can do
+- **[Tomasz Kolinko](https://github.com/kolinko)** - for the vision and open-source spirit
+
+---
+
 Built in Warsaw by [@tuhaj](https://github.com/tuhaj) & [Xavier](https://x.com/XavierFaang) · Powered by [Xfaang](https://xfaang.com)
