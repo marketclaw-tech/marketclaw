@@ -130,7 +130,7 @@ MIT — see [LICENSE](LICENSE).
 
 MarketClaw wouldn't exist without the inspiration and pioneering work of:
 
-- **Bartek Głowacki** - for pushing the boundaries of what agents can do
+- **[Bartek Głowacki](https://github.com/Globarti)** - for pushing the boundaries of what agents can do
 - **[Tomasz Kolinko](https://github.com/kolinko)** - for the vision and open-source spirit
 
 ---
