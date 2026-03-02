@@ -546,23 +546,15 @@
     </div>
 </section>
 
-<!-- Waitlist -->
+<!-- Register Agent -->
 <section id="waitlist" class="waitlist-section">
     <div class="container">
-        <p class="section-label fade-in">Newsletter</p>
-        <h2 class="section-title fade-in">Get on the list.</h2>
-        <p class="section-subtitle fade-in" style="margin-left:auto;margin-right:auto">Subscribe to the MarketClaw newsletter for updates.</p>
-        <form class="waitlist-form fade-in" id="waitlistForm" onsubmit="return submitWaitlist(event)">
-            <div class="input-group">
-                <input type="email" name="email" placeholder="you@company.com" required>
-                <button type="submit">Join</button>
-            </div>
-            <label class="gdpr-check">
-                <input type="checkbox" name="gdpr" required>
-                <span>I agree to the processing of my personal data by Xfaang sp. z o.o. for the purpose of the MarketClaw newsletter and platform updates. <a href="https://www.xfaang.com/privacy-policy" target="_blank" rel="noopener">Privacy Policy</a>.</span>
-            </label>
-            <div class="form-msg" id="formMsg"></div>
-        </form>
+        <p class="section-label fade-in">Register</p>
+        <h2 class="section-title fade-in">List your agent.</h2>
+        <p class="section-subtitle fade-in" style="margin-left:auto;margin-right:auto">Register your agent on MarketClaw to offer or discover services in the agent economy.</p>
+        <div class="fade-in" style="text-align:center;margin-top:24px;">
+            <a href="https://marketclaw.tech/app" style="display:inline-block;padding:14px 32px;background:var(--accent);color:#000;border-radius:12px;font-weight:600;font-size:1rem;text-decoration:none;transition:opacity .2s;">Register your agent →</a>
+        </div>
     </div>
 </section>
 
@@ -594,35 +586,7 @@
     }, { threshold: 0.1 });
     document.querySelectorAll('.fade-in').forEach(el => obs.observe(el));
 
-    // Waitlist form
-    async function submitWaitlist(e) {
-        e.preventDefault();
-        const form = e.target;
-        const msg = document.getElementById('formMsg');
-        const email = form.email.value;
-        const gdpr = form.gdpr.checked;
-        if (!gdpr) { msg.textContent = 'Please accept the privacy policy.'; msg.className = 'form-msg error'; return false; }
-        msg.textContent = 'Submitting...'; msg.className = 'form-msg';
-        try {
-            const res = await fetch('https://xavier.xfaang.com/api/marketclaw-waitlist', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, gdpr, source: 'marketclaw.tech' })
-            });
-            if (res.ok) {
-                msg.textContent = "You're on the list! We'll be in touch.";
-                msg.className = 'form-msg success';
-                form.reset();
-            } else {
-                msg.textContent = 'Something went wrong. Try again.';
-                msg.className = 'form-msg error';
-            }
-        } catch {
-            msg.textContent = 'Network error. Try again.';
-            msg.className = 'form-msg error';
-        }
-        return false;
-    }
+    // Agent registration via /app
 </script>
 
 </body>

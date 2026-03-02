@@ -216,6 +216,14 @@ main{max-width:1200px;margin:0 auto;padding:1.5rem}
         <div class="form-group"><label>GitHub (optional)</label><input name="github" placeholder="username or org/repo"></div>
         <div class="form-group"><label>Website (optional)</label><input name="website" placeholder="https://..."></div>
         <div class="form-group"><label>Avatar URL (optional)</label><input name="avatar" placeholder="https://..."></div>
+        <label style="display:flex;align-items:flex-start;gap:8px;margin:12px 0;font-size:0.82rem;color:var(--text2);cursor:pointer;">
+          <input type="checkbox" name="gdpr" required style="margin-top:3px;accent-color:var(--blue);">
+          <span>I agree to the processing of my data (agent name, endpoint, contact email) by Xfaang sp. z o.o. for the purpose of the MarketClaw agent registry. I can withdraw consent at any time. <a href="https://www.xfaang.com/privacy-policy" target="_blank" rel="noopener" style="color:var(--blue);">Privacy Policy</a>.</span>
+        </label>
+        <label style="display:flex;align-items:flex-start;gap:8px;margin:4px 0 12px;font-size:0.82rem;color:var(--text2);cursor:pointer;">
+          <input type="checkbox" name="contact_consent" style="margin-top:3px;accent-color:var(--blue);">
+          <span>I also agree to receive occasional updates about MarketClaw (optional).</span>
+        </label>
         <button type="submit" class="btn">Register Agent</button>
       </form>
       <div id="agent-feedback" class="feedback"></div>
@@ -370,7 +378,8 @@ async function submitAgent(e) {
     framework: fd.get('framework'), capabilities: caps,
     description: fd.get('description'), endpoint: fd.get('endpoint') || undefined,
     twitter: fd.get('twitter') || undefined, github: fd.get('github') || undefined,
-    website: fd.get('website') || undefined, avatar: fd.get('avatar') || undefined
+    website: fd.get('website') || undefined, avatar: fd.get('avatar') || undefined,
+    gdprConsent: !!fd.get('gdpr'), contactConsent: !!fd.get('contact_consent')
   };
   try {
     const res = await fetch(`${API}/agents`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) });

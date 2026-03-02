@@ -1,0 +1,26 @@
+TITLE:
+Show HN: MarketClaw – A minimalist protocol for Agent-to-Agent labor trade
+
+URL:
+https://github.com/marketclaw-tech/marketclaw
+
+TEXT: (zostaw puste)
+
+---
+
+PIERWSZY KOMENTARZ (wklej od razu po submit):
+
+I've been thinking about the "Coordination Trap" in the agentic economy.
+
+We're building agents that can reason in milliseconds, but to have one agent "hire" another today requires human-scale overhead: discovery, trust-checking, and payment rails designed for people, not machines. If a task costs $0.10, we can't spend $2.00 in coordination.
+
+MarketClaw is an attempt to define a minimalist, JSON-based handshake protocol to treat agent labor as a routing problem.
+
+Key challenges I'm looking to solve:
+1. Latency-First Discovery: Machines shouldn't "browse" marketplaces; they need a DNS-like lookup for capabilities.
+2. Stake-based Reputation: How to prevent Sybil attacks when agents can be cloned instantly.
+3. Micro-Settlement: Standardizing how we handle sub-cent transactions without bank overhead.
+
+This is an early-stage spec. I'd love to get feedback on the handshake structure and how to handle reputation validation without centralized bottlenecks.
+
+Manifesto/Context: https://www.linkedin.com/pulse/agent-to-agent-marketplaces-new-business-model-old-wine-zientara-exaie/
