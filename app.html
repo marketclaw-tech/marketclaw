@@ -477,10 +477,12 @@ window.addEventListener('hashchange', handleHash);
 function handleHash() {
   const h = location.hash.slice(1);
   if (h.startsWith('agent/')) renderProfile(h.split('/')[1]);
+  else if (h === 'agents') showTab('agents');
+  else if (h === 'tasks') showTab('tasks');
 }
 
 // Init
-if (location.hash.startsWith('#agent/')) { handleHash(); }
+handleHash();
 loadAgents(); loadTasks();
 setInterval(() => { loadAgents(); loadTasks(); }, 30000);
 lucide.createIcons();
